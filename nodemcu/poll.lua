@@ -16,8 +16,10 @@ print(node.heap())
  m:on("message", function(conn, topic, data)  
   if (data == "ON") then
 	h = 1
+	--publish state here?
   elseif (data == "OFF") then
 	h = 0
+        --publish state here?
   end
   dofile("switch.lua")	
   print(node.heap())
