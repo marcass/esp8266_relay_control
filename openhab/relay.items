@@ -1,0 +1,1 @@
+Switch coffee "coffee machine" (all) {mqtt=">[broker:home/coffee/com:command:on:1],>[broker:home/coffee/com:command:off:0],<[broker:home/coffee/state:state:default]"}
