@@ -6,19 +6,23 @@ gpio.mode(1,INT)
 gpio.trig(1,"both",function(state)
   if state == 1 then
 	print("Manual turn on for coffee")
-        m:publish("home/coffee/state","1",0,0, function(conn)
+        m:publish("home/coffee/state","1",2,1, function(conn)
 	end )	
   elseif state == 0 then
         print("Manual turn off for coffee")
-        m:publish("home/coffee/state","0",0,0, function(conn)
+        m:publish("home/coffee/state","0",2,1, function(conn)
         end )	
   end
 
 m = mqtt.Client("ESP8266 daikin", 180, "", "") --Last 2 values are user and password for broker
 
- m:lwt("lwt", "coffee", 0, 0)  
+ m:lwt("coffee", "offline", 0, 0)  
  m:on("offline", function(con)   
-  dofile("offline.lua")
+   print("MQTT reconnecting")
+   --do the subscription business
+   tmr.alarm(0, 1000, 1, function()
+   dofile("sub.lua")
+   end)
  end)  
 
  -- on publish message receive event  
@@ -32,7 +36,7 @@ m = mqtt.Client("ESP8266 daikin", 180, "", "") --Last 2 values are user and pass
   print(node.heap())
  end)  
 
---do the sudbscribption business
+--do the subscription business
  tmr.alarm(0, 1000, 1, function()  
    dofile("sub.lua")
  end)

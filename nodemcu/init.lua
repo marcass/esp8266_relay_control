@@ -7,10 +7,12 @@ gpio.write(6, gpio.LOW)
 gpio.mode(5, gpio.OUTPUT)
 gpio.write(5, gpio.LOW)
 
+-- set counter variables
+local  a  = 0      -- Counter of trys to connect to wifi
+local  b  = 200    -- Maximum number of WIFI Testings while waiting for connection
+
 
 function checkWIFI() 
-local  a     = 0      -- Counter of trys to connect to wifi
-local  b  = 200    -- Maximum number of WIFI Testings while waiting for connection
   if ( a > b ) then
     print("Sorry. Not able to connect")
   else
@@ -23,7 +25,7 @@ local  b  = 200    -- Maximum number of WIFI Testings while waiting for connecti
       -- Reset alarm again
       tmr.alarm( 0 , 2500 , 0 , checkWIFI)
       print("Checking WIFI..." .. a)
-      local a = a + 1
+      a = a + 1
     end 
   end 
 end
@@ -42,6 +44,8 @@ if ( ( wifi.sta.getip() == nil ) or  ( wifi.sta.getip() == "0.0.0.0" ) ) then
 else
  -- We are connected, so just run the launch code.
   print("IP Address: " .. wifi.sta.getip())
+  a = nil
+  b = nil
 
 -- allow 5s for garbage to be collected
   tmr.alarm(0, 5000, 0, function()
