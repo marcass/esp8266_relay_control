@@ -16,7 +16,7 @@ gpio.trig(1,"both",function(state)
         end )	
   end
 
-m = mqtt.Client(id, 180, buser, bpass) --Last 2 values are user and password for broker
+m = mqtt.Client(id, 180, buser, bpass)
 
 m:lwt(lwttop, "offline", 0, 0)  
 m:on("offline", function(conn)   
