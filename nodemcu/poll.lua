@@ -4,17 +4,41 @@
 --set pin mode for state gpio5 as interrupt
 gpio.mode(1,INT)
 
+--set pin mode for pushbutton toggle defaults to float on startup
+-- connect with a pull-up resistor
+gpio.mode(2,INT,gpio.PULLUP)
+
+function toggle()
+  s = gpio.read(1)
+  if s = 1 then
+    gpio.write(1, gpio.LOW)
+  elseif s = 0 then
+    gpio.write(1, gpio.HIGH)    
+  else
+    print("Invalid")
+  end
+end
+
+
+--button press calls toggle function   
+gpio.trig(2,"high", toggle)
+
 --change state of the switch in case of manual operation
-gpio.trig(1,"both",function(state)
-  if state == 1 then
+
+function state(level)
+  if level == 1 then
     print("Manual turn on for coffee")
     m:publish(csta,"ON",2,1, function(conn)
-    end )	
-  elseif state == 0 then
+    end )
+  elseif level == 0 then
         print("Manual turn off for coffee")
         m:publish(csta,"OFF",2,1, function(conn)
-        end )	
+        end )
   end
+end
+  
+--update state on button press
+gpio.trig(1,"both",state)
 
 m = mqtt.Client(id, 180, buser, bpass)
 
