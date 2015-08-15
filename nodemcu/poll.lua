@@ -54,6 +54,7 @@ function off()
 end)
 
 --callback fucntion to change openhab state of the switch in case of manual operation
+--perhaps a better state solution would be SCT-013-000 (a clamp current monitor)
 function state(level)
   if level == 1 then
     print("Manual turn on for coffee")
