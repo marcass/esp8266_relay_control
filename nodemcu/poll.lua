@@ -2,37 +2,41 @@
 
 --To avoid debouncing:
 --Hardware:
---resistor in series with load to button and
--- a capacator of 10-100MuF in parallel to load (-ve pin to gnd). 
+--resistor 2.2k resistor in series with load to button and
+-- a capacator of 1MuF in parallel to load (-ve pin to gnd). 
 -- T=RC where T=time constant of low pass filter
 --Software:
---20-50ms delay before moving on through read part of callback function
+--500ms delay before moving on through read part of callback function
 
---place a 10k ressitor in series with relay data line to reduce current
+--place a 10k ressitor in series with relay data line to reduce current if not already there in realy board
 
 --Variables------------------------------------------------
---set pin mode for state pin (gpio5) as interrupt
-spin = 1
+--set pin mode for state pin (gpio5) as interrupt (also trip relay)
+spin = 1  -- is gpio5
 
 --set pin mode for pushbutton toggle defaults to float on startup
 -- set for internal pull-up
-pin = 2
+pin = 2  -- is gpio4
+
+--mqtt
+m = mqtt.Client(id, 180, buser, bpass)
 ---------------------------------------------------------
 
 --function definitions------------------------------------
 --callback fucntion for button press
 function toggle()
-  s = gpio.read(pin)
-  if s = 1 then  --must be on
-    gpio.write(spin, gpio.LOW)
+  s = gpio.read(spin)
+  print("state pin = ") print(s)
+  if s == 1 then  --must be on
     --delay to avoid debounce
-    tmr.delay(20000)
+    tmr.delay(500000)
+    print("Button turned on")
     off()
   --in case of reboot where state pin will be floating need nil test
-  elseif s = nil or 0  then --must be off
-    gpio.write(spin, gpio.HIGH)
+  elseif s == nil or 0  then --must be off
     --delay to avoid debounce
-    tmr.delay(20000)
+    tmr.delay(500000)
+    print("Button turned off")
     on()
   else
     print("Invalid: check your code")
@@ -40,57 +44,41 @@ function toggle()
 end
 
 function on()
-  gpio.write(pinon,gpio.HIGH)
+  gpio.write(spin,gpio.HIGH)
   print("Turning coffee on..")
-  m:publish(state,"ON",2,1, function(conn)
+  m:publish(csta,"ON",2,0, function(conn)
   end )
 end
 
 function off()
-  gpio.write(pinon,gpio.LOW)
+  gpio.write(spin,gpio.LOW)
   print("Turning coffee off..")
-  m:publish(state,"OFF",2,1, function(conn)
+  m:publish(csta,"OFF",2,0, function(conn)
   end)
-end)
-
---callback fucntion to change openhab state of the switch in case of manual operation
---perhaps a better state solution would be SCT-013-000 (a clamp current monitor)
-function state(level)
-  if level == 1 then
-    print("Manual turn on for coffee")
-    m:publish(csta,"ON",2,0, function(conn)
-    end )
-  elseif level == 0 then
-        print("Manual turn off for coffee")
-        m:publish(csta,"OFF",2,0, function(conn)
-        end )
-  end
 end
+
 ---------------------------------------------------------------------
 
 --the guts (do this if that)-------------------------------------
 --set pin mode
-gpio.mode(spin,gpio.INT)
-gpio.mode(pin,gpio.INT,gpio.PULLUP)
+gpio.mode(spin,gpio.OUTPUT)
+gpio.mode(pin,gpio.INT)
 
 --button press calls toggle function   
 gpio.trig(pin,"high", toggle)
   
---update state on button press
-gpio.trig(spin,"both",state)
 ----------------------------------------------------------------
 
 --mqtt for openhab------------------------------------------
-m = mqtt.Client(id, 180, buser, bpass)
-
-m:lwt(lwttop, "offline", 0, 0)  
+m:lwt(lwtt, "offline", 0, 0)  
 m:on("offline", function(conn)   
   print("MQTT reconnecting")
   dofile("offline.lua")
 end)  
 
 -- on published message received for coffee command event  
-m:on("message", function(conn, ctop, data)  
+m:on("message", function(conn, topic, data)  
+ print("Message received")
  if (data == "ON") then
    on()
  elseif (data == "OFF") then
@@ -99,22 +87,14 @@ m:on("message", function(conn, ctop, data)
  print(node.heap())
 end)  
 
--- on published message received for coffee state event
-m:on("message", function(conn, csta, data)
- if (data == "ON") then
-   s = 1
- elseif (data == "OFF") then
-   s = 0
- else print("State is garbage")
- end
-end)
-
 --do the subscription business
 tmr.alarm(0, 1000, 1, function()  
  if wifi.sta.status() == 5 and wifi.sta.getip() ~= nil then
    tmr.stop(0)
    m:connect(broker, 1883, 0, function(conn)
+     print("connected to broker")
      m:subscribe(ctop,2, function(conn)
+     print("subscribed to coffee topic")
      end)
    end)
  end

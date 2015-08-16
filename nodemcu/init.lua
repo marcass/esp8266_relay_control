@@ -10,14 +10,6 @@ bpass	= ""		--broker password
 lwtt	= "lwt/coffee"		--last will and testament topic
 ctop	= "coffee/com"		--coffee com topic
 csta	= "coffee/state"		--coffee state topic
-pinon	= 6
-pinoff 	= 5 
-
--- Set pin state so it dones't turn heatpump on at power failure
-gpio.mode(pinon, gpio.OUTPUT)
-gpio.write(pinon, gpio.LOW)
-gpio.mode(pinoff, gpio.OUTPUT)
-gpio.write(pinoff, gpio.LOW)
 
 -- set counter variables
 local  a  = 0      -- Counter of trys to connect to wifi
@@ -49,7 +41,7 @@ if ( ( wifi.sta.getip() == nil ) or  ( wifi.sta.getip() == "0.0.0.0" ) ) then
   -- We aren't connected, so let's connect
   print("Configuring WIFI....")
   wifi.setmode( wifi.STATION )
-  wifi.sta.config(ssid, password)
+  wifi.sta.config(ssid, pass)
   print("Waiting for connection")
   tmr.alarm( 0 , 2500 , 0 , checkWIFI )  -- Call checkWIFI 2.5S in the future.
 else
