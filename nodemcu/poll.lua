@@ -30,13 +30,13 @@ function toggle()
   if s == 1 then  --must be on
     --delay to avoid debounce
     tmr.delay(500000)
-    print("Button turned on")
+    print("Button turned off")
     off()
   --in case of reboot where state pin will be floating need nil test
   elseif s == nil or 0  then --must be off
     --delay to avoid debounce
     tmr.delay(500000)
-    print("Button turned off")
+    print("Button turned on")
     on()
   else
     print("Invalid: check your code")
