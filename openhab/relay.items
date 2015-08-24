@@ -1,1 +1,2 @@
-Switch coffee "Coffee Machine" {mqtt=">[broker:coffee/com:command:ON:ON], >[broker:coffee/com:command:OFF:OFF], <[broker:coffee/state:state:default]"}
+Switch coffee {mqtt=">[broker:coffee/com:command:ON:ON], >[broker:coffee/com:command:OFF:OFF], <[broker:coffee/state:state:default]"}
+String coffee_status {mqtt="<[broker:lwt/coffee:state:default:offline]"}
